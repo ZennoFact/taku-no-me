@@ -1,0 +1,24 @@
+{
+  "name": "taku-no-me",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZennoFact/taku-no-me.git"
+  },
+  "author": "zenno04",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ZennoFact/taku-no-me/issues"
+  },
+  "homepage": "https://github.com/ZennoFact/taku-no-me#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.1",
+    "three": "^0.154.0"
+  }
+}
