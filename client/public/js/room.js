@@ -10,6 +10,7 @@ export class Room extends THREE.Group{
         this.height = height * 2;
         this.depth = depth * 2;
         this.bottom = -this.halfHeight;
+        this.top = this.halfHeight;
         this.objects = [];
         
 
@@ -21,7 +22,9 @@ export class Room extends THREE.Group{
         // floor
         this.add(new THREE.Mesh(
             new THREE.PlaneGeometry(this.width, this.depth),
-            new THREE.MeshLambertMaterial({ color: this.colors.floor})
+            new THREE.MeshLambertMaterial({ 
+                color: this.colors.floor
+            })
         ));
         // ceiling
         this.add(new THREE.Mesh(
@@ -66,8 +69,9 @@ export class Room extends THREE.Group{
             const setting = borderSettings[i];
             obj.position.set(setting.position.x, setting.position.y, setting.position.z);
             obj.rotation.set(setting.rotation.x, setting.rotation.y, setting.rotation.z);
+            obj.receiveShadow = true;
         });
-        
+    
     }
 
     getFloorHeight() {
