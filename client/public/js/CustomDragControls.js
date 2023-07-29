@@ -221,6 +221,8 @@ class CustomDragControls extends EventDispatcher {
 		this.getObjects = getObjects;
 		this.getRaycaster = getRaycaster;
 
+		this.pointerMove = onPointerMove
+
 	}
 
 }

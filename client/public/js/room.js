@@ -9,8 +9,8 @@ export class Room extends THREE.Group{
         this.width = width * 2;
         this.height = height * 2;
         this.depth = depth * 2;
-        this.bottom = -this.halfHeight;
-        this.top = this.halfHeight;
+        this.bottom = 0;
+        this.top = this.height;
         this.objects = [];
         
 
@@ -40,27 +40,27 @@ export class Room extends THREE.Group{
         }
         const borderSettings = [
             {
-                position: {x: 0, y: -this.halfHeight, z: 0},
+                position: {x: 0, y: 0, z: 0},
                 rotation: {x: -Math.PI * 0.5, y: 0, z:0}
             },
             {
-                position: {x: 0, y: this.halfHeight, z: 0},
+                position: {x: 0, y: this.top, z: 0},
                 rotation: {x: Math.PI * 0.5, y: 0, z:0}
             },
             {
-                position: {x: 0, y: 0, z: -this.halfDepth},
+                position: {x: 0, y: this.halfHeight, z: -this.halfDepth},
                 rotation: {x: 0, y: 0, z:0}
             },
             {
-                position: {x: -this.halfWidth, y: 0, z: 0},
+                position: {x: -this.halfWidth, y: this.halfHeight, z: 0},
                 rotation: {x: 0, y: Math.PI * 0.5, z:0}
             },
             {
-                position: {x: 0, y: 0, z: this.halfDepth},
+                position: {x: 0, y: this.halfHeight, z: this.halfDepth},
                 rotation: {x: 0, y: Math.PI * -1, z:0}
             },
             {
-                position: {x: this.halfWidth, y: 0, z: 0},
+                position: {x: this.halfWidth, y: this.halfHeight, z: 0},
                 rotation: {x: 0, y: Math.PI * -0.5, z:0}
             }
         ];

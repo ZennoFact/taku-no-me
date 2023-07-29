@@ -5,10 +5,10 @@ import { DragControls } from 'three/addons/controls/DragControls.js';
 
 import { CustomDragControls } from './CustomDragControls.js';
 import { Room } from './room.js';
-import { Desk, PC, StackableItem } from './furniture.js';
+import * as Furniture from './furniture.js';
+// import { Desk, PC, StackableItem } from './furniture.js';
 
 
-// let floorHeight = 0;
 let objects = [];
 
 function init() {
@@ -28,13 +28,13 @@ function init() {
     
     const orbitControls = new OrbitControls( camera, renderer.domElement );
     
-    const dragControls = new CustomDragControls( objects, camera, renderer.domElement);
     // const dragControls = new DragControls( objects, camera, renderer.domElement)
+    const dragControls = new CustomDragControls( objects, camera, renderer.domElement);
     dragControls.transformGroup = true;
 
 
     const mouse = new THREE.Vector2();
-    const raycaster = new THREE.Raycaster();
+    const raycaster = new THREE.Raycaster(); // TPDP: Raycasterの使い道確認
     let selectedObject = null;
     const degree = 15;
     const radian = degree * (Math.PI / 180);
@@ -76,23 +76,26 @@ function init() {
                 obj.material.opacity = 0.33;
             }
         });
+
+        dragControls.pointerMove(event);
     });
     dragControls.addEventListener('drag', event => {
         event.object.setBoudingBox();
         
-        if (event.object instanceof StackableItem) {
+        if (event.object instanceof Furniture.StackableItem) {
             let targetHeight = null;
             objects.forEach((obj, i) => {
-                if( !(obj instanceof StackableItem) && event.object.checkCollision(obj)) {
-                    targetHeight = obj.floorHeight + obj.size.y / 2;
+                if( !(obj instanceof Furniture.StackableItem) && event.object.checkCollision(obj)) {
+                    targetHeight = obj.floorHeight + obj.size.y; // TODO: ここ，グループ化したら高さが変わるのでは？
                     event.object.mounting(obj);
                     return true; 
                 }
             })
             if (targetHeight) {
-                // event.object.setFloorHeight(targetHeight + 0.25); // TODO: ここの高さが想定外に低いのと，当たり判定の処理が甘い
+                console.log('のってる');
                 event.object.setFloorHeight(targetHeight); 
             } else {
+                console.log('のってない');
                 event.object.setDefaultFloorHeight();
             }
         }
@@ -149,16 +152,18 @@ function init() {
         
     // 部屋の設定
     const room = new Room(15, 10, 15);
-    // floorHeight = room.getFloorHeight();
     scene.add(room);
     
-    const desk = new Desk(scene, room);
+    const desk = new Furniture.Desk(scene, room);
     objects.push(desk);
     
-    const pc = new PC(scene, room);
+    const pc = new Furniture.PC(scene, room);
     objects.push(pc);
+
+    const chair = new Furniture.Chair(scene, room);
+    objects.push(chair);
     
-    camera.position.set(50, 10, 50);
+    camera.position.set(50, 50, 50);
     camera.lookAt(0, 0, 0);
     setLight(scene, room.top);
 
