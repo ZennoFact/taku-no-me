@@ -39,85 +39,19 @@ function init() {
     const degree = 15;
     const radian = degree * (Math.PI / 180);
 
-    dragControls.addEventListener('hoveron', event => {
-        event.object.parent.children.forEach(obj => { // 選択の仕方に無理やり感がるが仕方ない（ライブラリ側確認）
-            if(obj instanceof THREE.Group) {
-                obj.children.forEach(o => { 
-                    o.material.wireframe = true;
-                });
-            } else {
-                obj.material.wireframe = true;
-            } 
-        });
-    });
-    dragControls.addEventListener('hoveroff', event => {
-        event.object.parent.children.forEach(obj => {
-            if(obj instanceof THREE.Group) {
-                obj.children.forEach(o => { 
-                    o.material.wireframe = false;
-                });
-            } else {
-                obj.material.wireframe = false;
-            }
-        });
-    });
+    dragControls.addEventListener('hoveron', event => event.object.parent.hoverOn());
+    dragControls.addEventListener('hoveroff', event => event.object.parent.hoverOff());
 
     dragControls.addEventListener('dragstart', event => {
         orbitControls.enabled = false;
         selectedObject = event.object;
-        event.object.children.forEach(obj => {
-            if(obj instanceof THREE.Group) {
-                obj.children.forEach(o => { 
-                    o.material.wireframe = false;
-                    o.material.opacity = 0.33;
-                });
-            } else {
-                obj.material.wireframe = false;
-                obj.material.opacity = 0.33;
-            }
-        });
-
-        dragControls.pointerMove(event);
+        event.object.selectOn();
     });
-    dragControls.addEventListener('drag', event => {
-        event.object.setBoudingBox();
-        
-        if (event.object instanceof Furniture.StackableItem) {
-            let targetHeight = null;
-            objects.forEach((obj, i) => {
-                if( !(obj instanceof Furniture.StackableItem) && event.object.checkCollision(obj)) {
-                    targetHeight = obj.floorHeight + obj.size.y; // TODO: ここ，グループ化したら高さが変わるのでは？
-                    event.object.mounting(obj);
-                    return true; 
-                }
-            })
-            if (targetHeight) {
-                console.log('のってる');
-                event.object.setFloorHeight(targetHeight); 
-            } else {
-                console.log('のってない');
-                event.object.setDefaultFloorHeight();
-            }
-        }
-
-        event.object.update();
-    })
+    dragControls.addEventListener('drag', event => event.object.update(objects) );
     dragControls.addEventListener('dragend', event => {
-        orbitControls.enabled = true;
-        
         event.object.complete();
-
-        event.object.children.forEach(obj => {
-            if(obj instanceof THREE.Group) {
-                obj.children.forEach(o => o.material.opacity = 1);
-            } else {
-                obj.material.opacity = 1;
-            }
-            
-        });
         selectedObject = null;
-
-        event.object.update();
+        orbitControls.enabled = true;
     });
 
     

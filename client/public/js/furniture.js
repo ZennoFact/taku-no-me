@@ -6,17 +6,18 @@ import { Room } from './room';
 
 
 class RoomItem extends THREE.Group {
-    constructor(scene, room, color = 0xffffff, canStack = false) {
+    constructor(scene, room, color = 0xffffff, secondColor = 0xffffff, canStack = false) {
         super();
         this.scene = scene;
         this.room = room;
-        this.createMeshFunction();
         this.color = color;
+        this.secondColor = secondColor;
+        
+        this.createMeshFunction();
 
         this.boundingBox = new THREE.Box3();
         this.setBoudingBox();
         this.setBorder();
-        console.log(this.constructor.name, this.boundingBox, this.size)
         
         this.setArea(this.border.bottom, this.border.left, this.border.right, this.border.far, this.border.near);
         this.canStcack = canStack;
@@ -59,7 +60,6 @@ class RoomItem extends THREE.Group {
             far: -this.room.halfDepth + this.size.z / 2,
             near: this.room.halfDepth - this.size.z / 2
         }
-        console.log(this.border)
     }
 
     update() {
@@ -68,7 +68,8 @@ class RoomItem extends THREE.Group {
     }
 
     complete() {
-        console.log("need override");
+        this.selectOff();
+        this.update();
     }
 
     checkCollision(object) {
@@ -117,41 +118,152 @@ class RoomItem extends THREE.Group {
         else if(this.areaNear < this.position.z) this.position.z = this.areaNear;
         // console.log("after: ", this.floorHeight, this.position.y)
     }
+
+    hoverOn() {
+        this.children.forEach(o => {
+            if (o.isGroup) {
+                o.children.forEach(item => {
+                    item.material.wireframe = true;
+                });
+            } else {
+                o.material.wireframe = true;
+            }
+        });
+    }
+
+    hoverOff() {
+        this.children.forEach(o => {
+            if (o.isGroup) {
+                o.children.forEach(item => {
+                    item.material.wireframe = false;
+                });
+            } else {
+                o.material.wireframe = false;
+            }
+        });
+    }
+
+    selectOn() { 
+        this.children.forEach(o => { 
+            if (o.isGroup) {
+                o.children.forEach(item => {
+                    item.material.wireframe = false;
+                    item.material.opacity = 0.33;
+                });
+            } else {
+                o.material.wireframe = false;
+                o.material.opacity = 0.33;
+            }
+        });
+    }
+
+    selectOff() {
+        this.children.forEach(o => { 
+            if (o.isGroup) {
+                o.children.forEach(item => {
+                    item.material.opacity = 1;
+                });
+            } else {
+                o.material.opacity = 1;
+            }
+        });
+    }
+
 }
 
 class Furniture extends RoomItem {
-    constructor(scene, room, color, canStack = false) {
-        super(scene, room, color, canStack)
+    constructor(scene, room, color, secondColor = 0xffffff, canStack = false) {
+        super(scene, room, color, secondColor,  canStack)
     }   
 
-    complete() { // ここ，良い形を検討
-        // do not something
+    complete() {
+        super.complete();
     }
 }
 
 export class StackableItem extends RoomItem {
-    constructor(scene, room, color, canStack = true) {
-        super(scene, room, color, canStack);
+    constructor(scene, room, color, secondColor = 0xffffff, canStack = true) {
+        super(scene, room, color, secondColor, canStack);
         this.base = null;
+        this.isReplace = false;
+    }
+
+    selectOn() {
+        super.selectOn();
+        this.startReplace();
+    }
+
+    startReplace() {
+        if(this.isReplace) {
+            const base = this.base;
+            const rotation = this.base.rotation;
+            this.convertToWorldPosition();
+            this.unmount();
+
+            // TODO: ここの回転を調整しないと，気持ちいい操作にならなさそう（現状ずれてる）①
+            this.rotation.y = rotation.y
+            this.isReplace = false;
+            
+            this.base = base;
+            this.base.setBoudingBox();
+            this.floorHeight = this.base.size.y;
+        } 
     }
  
     mounting(base) {
         console.log("mounting");
         // this.unmount();
         // console.log("mounting:", base)
-        if(this.base) {
-            this.floorHeight = this.base.border.bottom;
-        } else {
-            this.base = base;
-            this.floorHeight = this.base.size.y;
-        }
-
-        
-        console.log(this.floorHeight)
-        // TODO: ここの回転を調整しないと，気持ちいい操作にならなさそう（現状ずれてる）①
-        this.rotation.y = this.base.rotation.y;
+        this.base = base;
+        this.floorHeight = this.base.size.y;
     }
     mount() {
+        this.convertToLocalPosition();
+        
+        const bb = this.base.boundingBox
+        const baseSize = this.base.getBoundingBoxSize();
+        this.floorHeight = baseSize.y
+        this.isReplace = true;
+    }
+    
+    unmount() {
+        console.log('unmount');
+        this.base = null;
+        this.floorHeight = this.border.bottom;
+    }
+
+    convertToWorldPosition() {
+        // // const position = this.localToWorld(this.position.clone());
+        
+        // // const position = this.getWorldPosition(this.position.clone());
+        // const position = this.getWorldPosition(new THREE.Vector3());
+
+        // console.log("Line 182: ", this.position);
+
+        // this.base.remove(this);
+
+        // this.position.copy(position);
+        // // this.position.copy(this.base.worldToLocal(position));
+        // // this.position.copy(this.scene.worldToLocal(position));
+        
+        // console.log("Line 190: ", this.position);
+
+        // this.scene.add(this);
+        // // this.scene.attach(this);
+        
+        // // TODO: 確認。これ，回転も反映される？
+        // // this.rotation.y = this.base.rotation.y;
+
+        this.position.copy(this.localToWorld(this.position.clone()));
+        this.base.remove(this);
+
+        this.scene.add(this);
+        
+        this.base.setBoudingBox();
+        this.setBoudingBox()
+    }
+
+    convertToLocalPosition() {
         console.log('mount')
         console.log(this.position.y)
         // world position to local position
@@ -163,41 +275,11 @@ export class StackableItem extends RoomItem {
         
         // TODO: ここの回転を調整しないと，気持ちいい操作にならなさそう（現状ずれてる）②
         this.rotation.y -= this.base.rotation.y;
-
-        const bb = this.base.boundingBox
-        const baseSize = this.base.getBoundingBoxSize();
-        // console.log("mount: ", this.border.bottom, baseSize.y, this.size.y)
-
-        this.floorHeight = baseSize.y
-
     }
+
     
-    unmount() {
-        console.log('unmount');
-        // TODO: local to world がうまくできない。
-
-        // const localPosition = this.localToWorld(this.position.clone());
-        const localPosition = this.getWorldPosition(new THREE.Vector3() );
-
-        this.base.remove(this);
-        this.scene.attach(this);
-        this.position.copy(localPosition);
-
-
-        this.base.setBoudingBox();
-        this.setBoudingBox()
-
-        // TODO: 確認。これ，回転も反映される？
-        // this.rotation.y = this.base.rotation.y;
-        
-        this.base = null;
-        // this.setArea(this.border.bottom, this.border.left, this.border.right, this.border.far, this.border.near);
-
-        this.floorHeight = this.border.bottom;
-
-    }
-
     complete() {
+        super.complete();
         if (this.base) {
             if (this.floorHeight === this.border.bottom) {
                 this.unmount();
@@ -206,15 +288,31 @@ export class StackableItem extends RoomItem {
             }
         }
     }
+
+    update(objects) {
+        if(objects) {
+            this.setDefaultFloorHeight();
+            objects.forEach((obj, i) => {
+                if( !(obj instanceof StackableItem) && this.checkCollision(obj)) {
+                    const targetHeight = obj.floorHeight + obj.size.y;
+                    this.mounting(obj);
+                    this.setFloorHeight(targetHeight); 
+                    return true; 
+                }
+            })
+        }
+
+        super.update();
+    }
 }
 
 export class Desk extends Furniture {
-    constructor(scene, room, color = 0x242424) {
-        super(scene, room, color, false);
+    constructor(scene, room, color = 0x242424, secondColor = 0xffffff) {
+        super(scene, room, color, secondColor, false);
     }
 
     createMeshFunction() {
-        const mainMaterial = new THREE.MeshToonMaterial( { color: 0x242424 } );
+        const mainMaterial = new THREE.MeshToonMaterial( { color: this.color } );
 
         const parts = [];
         parts.push(
@@ -233,12 +331,12 @@ export class Desk extends Furniture {
 }
 
 export class Chair extends Furniture {
-    constructor(scene, room, color = 0x242424) {
-        super(scene, room, color, false);
+    constructor(scene, room, color = 0x242424, secondColor = 0xffffff) {
+        super(scene, room, color, secondColor, false);
     }
 
     createMeshFunction() {
-        const mainMaterial = new THREE.MeshToonMaterial( { color: 0x242424 } );
+        const mainMaterial = new THREE.MeshToonMaterial( { color: this.color } );
 
         const parts = [];
         parts.push(
@@ -258,13 +356,14 @@ export class Chair extends Furniture {
 }
 
 export class PC extends StackableItem {
-    constructor(scene, room, color = 0xb2baba, canStack = true) {
-        super(scene, room, color, canStack);
+    constructor(scene, room, color = 0xb2baba, secondColor = 0x000000, canStack = true) {
+        super(scene, room, color, secondColor, canStack);
         
     } 
 
     createMeshFunction() {
-        const monitorMaterial = new THREE.MeshLambertMaterial( { color: 0x000 } );
+        console.log(this.secondColor)
+        const monitorMaterial = new THREE.MeshLambertMaterial( { color: this.secondColor } );
         const bodyMaterial = new THREE.MeshLambertMaterial( { color: this.color } );
         const displayGeometry = new THREE.BoxGeometry(4.8, 3.8, 0.2);
         const display = new THREE.Mesh(displayGeometry, monitorMaterial)
