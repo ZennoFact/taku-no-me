@@ -6,12 +6,12 @@ import { Room } from './room';
 
 
 class RoomItem extends THREE.Group {
-    constructor(scene, room, color = 0xffffff, secondColor = 0xffffff, canStack = false) {
+    constructor(scene, room, color = "#ffffff", subColor = "#ffffff", canStack = false) {
         super();
         this.scene = scene;
         this.room = room;
         this.color = color;
-        this.secondColor = secondColor;
+        this.subColor = subColor;
         
         this.createMeshFunction();
 
@@ -30,6 +30,16 @@ class RoomItem extends THREE.Group {
 
         this.scene.add(this);
         this.update();
+    }
+
+    colorChange(mainColor, subColor) {
+        this.mainColor = mainColor;
+        if(this.subMaterial) this.subColor = subColor;
+
+        // TODO：これだとうまく色変わらない。
+        this.mainMaterial.color = this.mainColor;
+        this.geometry.colorsNeedUpdate = true;
+
     }
 
     toJSON() { // TODO: このデータを保存に使う
@@ -96,7 +106,7 @@ class RoomItem extends THREE.Group {
     createMeshFunction() {
         // サンプル:継承時にオーバーライドして使用。
         const geometry = new THREE.BoxGeometry( 10, 5, 5 );
-        const material = new THREE.MeshBasicMaterial( { color: 0x242424 } );
+        const material = new THREE.MeshBasicMaterial( { color: "#242424" } );
         const obj = new THREE.Mesh(geometry, material);
         this.add(obj)
     }
@@ -172,8 +182,8 @@ class RoomItem extends THREE.Group {
 }
 
 class Furniture extends RoomItem {
-    constructor(scene, room, color, secondColor = 0xffffff, canStack = false) {
-        super(scene, room, color, secondColor,  canStack)
+    constructor(scene, room, color, subColor = "#ffffff", canStack = false) {
+        super(scene, room, color, subColor,  canStack)
     }   
 
     complete() {
@@ -182,10 +192,12 @@ class Furniture extends RoomItem {
 }
 
 export class StackableItem extends RoomItem {
-    constructor(scene, room, color, secondColor = 0xffffff, canStack = true) {
-        super(scene, room, color, secondColor, canStack);
+    constructor(scene, room, color, subColor = "#ffffff", canStack = true) {
+        super(scene, room, color, subColor, canStack);
         this.base = null;
         this.isReplace = false;
+        
+        this.add(new THREE.AxesHelper(4));
     }
 
     selectOn() {
@@ -198,10 +210,14 @@ export class StackableItem extends RoomItem {
             const base = this.base;
             const rotation = this.base.rotation;
             this.convertToWorldPosition();
-            this.unmount();
+            // this.unmount(); // TODO: いるのかいらんのかはっきりせん。多分いらん。
 
             // TODO: ここの回転を調整しないと，気持ちいい操作にならなさそう（現状ずれてる）①
-            this.rotation.y = rotation.y
+            // const worldRotation = new THREE.Euler();
+            // this.getWorldRotation(worldRotation);
+            // this.rotation.copy(worldRotation);
+
+            // this.rotation.y = rotation.y
             this.isReplace = false;
             
             this.base = base;
@@ -215,15 +231,20 @@ export class StackableItem extends RoomItem {
         // this.unmount();
         // console.log("mounting:", base)
         this.base = base;
-        this.floorHeight = this.base.size.y;
+
+        const targetHeight = base.floorHeight + base.size.y;
+        this.setFloorHeight(targetHeight); 
     }
     mount() {
+        const rotationY = this.rotation.y;
         this.convertToLocalPosition();
         
         const bb = this.base.boundingBox
         const baseSize = this.base.getBoundingBoxSize();
         this.floorHeight = baseSize.y
         this.isReplace = true;
+
+        // console.log(this.position, this.localToWorld(new THREE.Vector3()))
     }
     
     unmount() {
@@ -233,31 +254,17 @@ export class StackableItem extends RoomItem {
     }
 
     convertToWorldPosition() {
-        // // const position = this.localToWorld(this.position.clone());
-        
-        // // const position = this.getWorldPosition(this.position.clone());
-        // const position = this.getWorldPosition(new THREE.Vector3());
 
-        // console.log("Line 182: ", this.position);
-
-        // this.base.remove(this);
-
-        // this.position.copy(position);
-        // // this.position.copy(this.base.worldToLocal(position));
-        // // this.position.copy(this.scene.worldToLocal(position));
-        
-        // console.log("Line 190: ", this.position);
+        // TODO: どうも，移動開始してからずれているようにも思う
+        const localPosition = this.localToWorld(new THREE.Vector3());
+        this.base.remove(this);
+        this.position.copy(localPosition.clone());
 
         // this.scene.add(this);
-        // // this.scene.attach(this);
+        this.scene.attach(this);
         
-        // // TODO: 確認。これ，回転も反映される？
-        // // this.rotation.y = this.base.rotation.y;
+        console.log(localPosition, this.position)
 
-        this.position.copy(this.localToWorld(this.position.clone()));
-        this.base.remove(this);
-
-        this.scene.add(this);
         
         this.base.setBoudingBox();
         this.setBoudingBox()
@@ -268,13 +275,14 @@ export class StackableItem extends RoomItem {
         console.log(this.position.y)
         // world position to local position
         const localPosition = this.base.worldToLocal(this.position.clone());
-        this.base.add(this);
+        // this.base.add(this);
+        this.base.attach(this);
         // 位置を調整して重なりを解消
         this.position.copy(localPosition);
         console.log(this.position.y)
         
         // TODO: ここの回転を調整しないと，気持ちいい操作にならなさそう（現状ずれてる）②
-        this.rotation.y -= this.base.rotation.y;
+        // this.rotation.y -= this.base.rotation.y;
     }
 
     
@@ -294,9 +302,7 @@ export class StackableItem extends RoomItem {
             this.setDefaultFloorHeight();
             objects.forEach((obj, i) => {
                 if( !(obj instanceof StackableItem) && this.checkCollision(obj)) {
-                    const targetHeight = obj.floorHeight + obj.size.y;
                     this.mounting(obj);
-                    this.setFloorHeight(targetHeight); 
                     return true; 
                 }
             })
@@ -307,12 +313,12 @@ export class StackableItem extends RoomItem {
 }
 
 export class Desk extends Furniture {
-    constructor(scene, room, color = 0x242424, secondColor = 0xffffff) {
-        super(scene, room, color, secondColor, false);
+    constructor(scene, room, color = "#242424", subColor = "#ffffff") {
+        super(scene, room, color, subColor, false);
     }
 
     createMeshFunction() {
-        const mainMaterial = new THREE.MeshToonMaterial( { color: this.color } );
+        this.mainMaterial = new THREE.MeshToonMaterial( { color: this.color } );
 
         const parts = [];
         parts.push(
@@ -324,19 +330,19 @@ export class Desk extends Furniture {
             new THREE.BoxGeometry( 8, 1, 4 ).translate(0, 2, 0));
         // geometryの結合
         const geometry = BufferGeometryUtils.mergeBufferGeometries(parts);
-        const object = new THREE.Mesh(geometry, mainMaterial);
+        const object = new THREE.Mesh(geometry, this.mainMaterial);
 
         this.add(object);
     }
 }
 
 export class Chair extends Furniture {
-    constructor(scene, room, color = 0x242424, secondColor = 0xffffff) {
-        super(scene, room, color, secondColor, false);
+    constructor(scene, room, color = "#242424", subColor = "#ffffff") {
+        super(scene, room, color, subColor, false);
     }
 
     createMeshFunction() {
-        const mainMaterial = new THREE.MeshToonMaterial( { color: this.color } );
+        this.mainMaterial = new THREE.MeshToonMaterial( { color: this.color } );
 
         const parts = [];
         parts.push(
@@ -348,27 +354,126 @@ export class Chair extends Furniture {
             new THREE.BoxGeometry(3, 3.5, 0.3 ).translate(0, 2.5, 1.5));
         // geometryの結合
         const geometry = BufferGeometryUtils.mergeBufferGeometries(parts);
-        const object = new THREE.Mesh(geometry, mainMaterial);
+        const object = new THREE.Mesh(geometry, this.mainMaterial);
         geometry.translate(0, -1.5, 0); // TODO: 中心軸を動かすことで何とか対応したが，もうちょっといい解決策はないか思案中①
 
         this.add(object);
     }
 }
 
+export class Bed extends Furniture {
+    constructor(scene, room, color = "#242424", subColor = "#ffffff") {
+        super(scene, room, color, subColor, false);
+    }
+
+    createMeshFunction() {
+        this.mainMaterial = new THREE.MeshToonMaterial( { color: this.color } );
+        this.subMaterial = new THREE.MeshToonMaterial( { color: this.subColor } );
+
+        const parts = [];
+        parts.push(
+            new THREE.BoxGeometry(15, 0.5, 7).translate(0, 1.25, 0),
+            new THREE.BoxGeometry(0.3, 3, 0.3).translate(7.5, 0, 3.5),
+            new THREE.BoxGeometry(0.3, 3, 0.3).translate(7.5, 0, -3.5), 
+            new THREE.BoxGeometry(0.3, 3, 0.3).translate(-7.5, 0, 3.5), 
+            new THREE.BoxGeometry(0.3, 3, 0.3).translate(-7.5, 0, -3.5),
+            new THREE.BoxGeometry(0.3, 3.5, 7 ).translate(-7.5, 2.5, 0));
+        // geometryの結合
+        const geometry = BufferGeometryUtils.mergeBufferGeometries(parts);
+        const object = new THREE.Mesh(geometry, this.mainMaterial);
+        geometry.translate(0, -1.5, 0); // TODO: 中心軸を動かすことで何とか対応したが，もうちょっといい解決策はないか思案中①
+
+        const parts2 = [];
+        parts2.push(
+            new THREE.BoxGeometry(14.8, 1, 6.8).translate(0, 1.75, 0),
+        );
+        const geometry2 = BufferGeometryUtils.mergeBufferGeometries(parts2);
+        const object2 = new THREE.Mesh(geometry2, this.subMaterial);
+        geometry2.translate(0, -1.5, 0); 
+
+        this.add(object, object2);
+    }
+}
+
+export class HighBed extends Furniture {
+    constructor(scene, room, color = "#242424", subColor = "#ffffff") {
+        super(scene, room, color, subColor, false);
+    }
+
+    createMeshFunction() {
+        this.mainMaterial = new THREE.MeshToonMaterial( { color: this.color } );
+        this.subMaterial = new THREE.MeshToonMaterial( { color: this.subColor } );
+
+        const parts = [];
+        parts.push(
+            new THREE.BoxGeometry(15, 0.5, 7).translate(0, 6.25, 0),
+            new THREE.BoxGeometry(0.3, 13, 0.3).translate(7.5, 0, 3.5),
+            new THREE.BoxGeometry(0.3, 13, 0.3).translate(7.5, 0, -3.5), 
+            new THREE.BoxGeometry(0.3, 13, 0.3).translate(-7.5, 0, 3.5), 
+            new THREE.BoxGeometry(0.3, 13, 0.3).translate(-7.5, 0, -3.5),
+            new THREE.BoxGeometry(0.3, 3.5, 7 ).translate(-7.5, 8, 0),
+            new THREE.BoxGeometry(0.3, 13, 0.3).translate(4.5, 0, 3.5),
+            new THREE.BoxGeometry(3, 0.3, 0.3).translate(6, 0, 3.5),
+            new THREE.BoxGeometry(3, 0.3, 0.3).translate(6, 2, 3.5),
+            new THREE.BoxGeometry(3, 0.3, 0.3).translate(6, 4, 3.5),
+            new THREE.BoxGeometry(3, 0.3, 0.3).translate(6, -2, 3.5),
+            new THREE.BoxGeometry(3, 0.3, 0.3).translate(6, -4, 3.5),
+            new THREE.BoxGeometry(0.3, 13, 0.3).translate(4.5, 0, -3.5), 
+            new THREE.BoxGeometry(3, 0.3, 0.3).translate(6, 0, -3.5),
+            new THREE.BoxGeometry(3, 0.3, 0.3).translate(6, 2, -3.5),
+            new THREE.BoxGeometry(3, 0.3, 0.3).translate(6, 4, -3.5),
+            new THREE.BoxGeometry(3, 0.3, 0.3).translate(6, -2, -3.5),
+            new THREE.BoxGeometry(3, 0.3, 0.3).translate(6, -4, -3.5),
+            new THREE.BoxGeometry(0.3, 3.5, 7 ).translate(7.5, 8, 0),
+
+            
+            new THREE.BoxGeometry(10, 0.3, 0.3).translate(-1.5, 9, 3.5),
+            new THREE.BoxGeometry(0.3, 3, 0.3).translate(0.2, 7.5, 3.5),
+            new THREE.BoxGeometry(0.3, 3, 0.3).translate(1.9, 7.5, 3.5),
+            new THREE.BoxGeometry(0.3, 3, 0.3).translate(3.35, 7.5, 3.5),
+            new THREE.BoxGeometry(0.3, 3, 0.3).translate(-1.4, 7.5, 3.5),
+            new THREE.BoxGeometry(0.3, 3, 0.3).translate(-3.0, 7.5, 3.5),
+            new THREE.BoxGeometry(0.3, 3, 0.3).translate(-4.7, 7.5, 3.5),
+            new THREE.BoxGeometry(0.3, 3, 0.3).translate(-6.35, 7.5, 3.5),
+            new THREE.BoxGeometry(10, 0.3, 0.3).translate(-1.5, 9, -3.5),
+            new THREE.BoxGeometry(0.3, 3, 0.3).translate(0.2, 7.5, -3.5),
+            new THREE.BoxGeometry(0.3, 3, 0.3).translate(1.9, 7.5, -3.5),
+            new THREE.BoxGeometry(0.3, 3, 0.3).translate(3.35, 7.5, -3.5),
+            new THREE.BoxGeometry(0.3, 3, 0.3).translate(-1.4, 7.5, -3.5),
+            new THREE.BoxGeometry(0.3, 3, 0.3).translate(-3.0, 7.5, -3.5),
+            new THREE.BoxGeometry(0.3, 3, 0.3).translate(-4.7, 7.5, -3.5),
+            new THREE.BoxGeometry(0.3, 3, 0.3).translate(-6.35, 7.5, -3.5),
+        );
+        // geometryの結合
+        const geometry = BufferGeometryUtils.mergeBufferGeometries(parts);
+        const object = new THREE.Mesh(geometry, this.mainMaterial);
+        geometry.translate(0, -1.75, 0); // TODO: 中心軸を動かすことで何とか対応したが，もうちょっといい解決策はないか思案中①
+
+        const parts2 = [];
+        parts2.push(
+            new THREE.BoxGeometry(14.8, 1, 6.8).translate(0, 7, 0),
+        );
+        const geometry2 = BufferGeometryUtils.mergeBufferGeometries(parts2);
+        const object2 = new THREE.Mesh(geometry2, this.subMaterial);
+        geometry2.translate(0, -1.75, 0); 
+
+        this.add(object, object2);
+    }
+}
+
 export class PC extends StackableItem {
-    constructor(scene, room, color = 0xb2baba, secondColor = 0x000000, canStack = true) {
-        super(scene, room, color, secondColor, canStack);
-        
+    constructor(scene, room, color = 0xb2baba, subColor = 0x000000, canStack = true) {
+        super(scene, room, color, subColor, canStack);
     } 
 
     createMeshFunction() {
-        console.log(this.secondColor)
-        const monitorMaterial = new THREE.MeshLambertMaterial( { color: this.secondColor } );
-        const bodyMaterial = new THREE.MeshLambertMaterial( { color: this.color } );
+
+        this.subMaterial = new THREE.MeshLambertMaterial( { color: this.subColor } );
+        this.mainMaterial = new THREE.MeshLambertMaterial( { color: this.color } );
         const displayGeometry = new THREE.BoxGeometry(4.8, 3.8, 0.2);
-        const display = new THREE.Mesh(displayGeometry, monitorMaterial)
-        // const keyboard = new THREE.Mesh(new THREE.BoxGeometry(3, 0.2, 1), bodyMaterial);
-        // const mouse = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 0.7), bodyMaterial);
+        const display = new THREE.Mesh(displayGeometry, this.subMaterial)
+        // const keyboard = new THREE.Mesh(new THREE.BoxGeometry(3, 0.2, 1), this.mainMaterial);
+        // const mouse = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 0.7), this.mainMaterial);
 
         display.position.set(0, 3, 0.1);
         // keyboard.position.set(0, 0, 1.3);
@@ -391,7 +496,7 @@ export class PC extends StackableItem {
         // TODO: 中心軸を動かすことで何とか対応したが，もうちょっといい解決策はないか思案中②
         displayGeometry.translate(0, -2.5, 0)
         geometry.translate(0, -2.5, 0); 
-        const object = new THREE.Mesh(geometry, bodyMaterial);
+        const object = new THREE.Mesh(geometry, this.mainMaterial);
         
 
         this.add(object, display);

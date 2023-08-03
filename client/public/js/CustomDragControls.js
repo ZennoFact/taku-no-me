@@ -85,6 +85,7 @@ class CustomDragControls extends EventDispatcher {
 			if ( _selected ) {
 
 				if ( _raycaster.ray.intersectPlane( _plane, _intersection ) ) {
+					// console.log(_offset)
 					_selected.position.copy( _intersection.sub( _offset ).applyMatrix4( _inverseMatrix ) );	
 				}
 

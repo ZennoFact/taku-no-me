@@ -31,13 +31,15 @@ export class Room extends THREE.Group{
             new THREE.PlaneGeometry(this.width, this.depth),
             new THREE.MeshLambertMaterial({ color: this.colors.ceiling})
         ));
-        const wallGeometry = new THREE.PlaneGeometry(this.width, this.height);
+        const wallGeometryX = new THREE.PlaneGeometry(this.width, this.height);
+        const wallGeometryZ = new THREE.PlaneGeometry(this.depth, this.height);
         const wallMaterial = new THREE.MeshLambertMaterial({ 
             color: this.colors.wall
         });
-        for (let i = 0; i < 4; i++) {
-            this.add(new THREE.Mesh(wallGeometry, wallMaterial));
-        }
+        this.add(new THREE.Mesh(wallGeometryX, wallMaterial));
+        this.add(new THREE.Mesh(wallGeometryZ, wallMaterial));
+        this.add(new THREE.Mesh(wallGeometryX, wallMaterial));
+        this.add(new THREE.Mesh(wallGeometryZ, wallMaterial));
         const borderSettings = [
             {
                 position: {x: 0, y: 0, z: 0},
@@ -75,6 +77,6 @@ export class Room extends THREE.Group{
     }
 
     getFloorHeight() {
-        return -this.halfHeight;
+        return this.bottom;
     }
 }
