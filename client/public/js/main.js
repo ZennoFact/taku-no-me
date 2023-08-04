@@ -44,24 +44,6 @@ function init() {
     const degree = 15;
     const radian = degree * (Math.PI / 180);
 
-    function colorPickerReset() {
-      if(selectedObject) {
-        colorPicker1.value = selectedObject.color;
-        colorPicker2.value = selectedObject.subColor;
-        edittingObject = selectedObject;
-      }
-    }
-
-    document.querySelector('#save-button').addEventListener('click', event => {
-      if(edittingObject) {
-        edittingObject.colorChange(colorPicker1.value, colorPicker2.value);
-        edittingObject = null;
-
-        colorPicker1.value = "#000";
-        colorPicker2.value = "#000";
-      }
-    }, false);
-
     dragControls.addEventListener('hoveron', event => event.object.parent.hoverOn());
     dragControls.addEventListener('hoveroff', event => event.object.parent.hoverOff());
 
@@ -70,7 +52,6 @@ function init() {
         selectedObject = event.object;
         event.object.selectOn();
 
-        colorPickerReset();
     });
     dragControls.addEventListener('drag', event => event.object.update(objects) );
     dragControls.addEventListener('dragend', event => {
@@ -122,8 +103,8 @@ function init() {
     // const chair = new Furniture.Chair(scene, room);
     // objects.push(chair);
 
-    const obj = new Furniture.HighBed(scene, room);
-    objects.push(obj);
+    // const obj = new Furniture.HighBed(scene, room);
+    // objects.push(obj);
     
     camera.position.set(50, 50, 50);
     camera.lookAt(0, 0, 0);
@@ -169,14 +150,47 @@ init();
 // function getClass(className){return Function('return (' + className + ')')();}
 function getClass(className){return eval(className)}
 function generate(className) {
-    // const desk = new Furniture.Desk(scene, room);
-    // objects.push(desk);
     const name = `Furniture.${className}`;
-    console.log(name)
-    
     const c = getClass(name);
     const instance = new c(scene, room);
     objects.push(instance);
+
+    // templateから生成
+    const template = document.querySelector("#edit-console");
+    const clone = template.content.cloneNode(true);
+    clone.querySelector('li').id = "item" + instance.index;
+    clone.querySelector('h3').innerHTML = className;
+    const picker1 = clone.querySelector('.main-color');
+    picker1.value = instance.color;
+    const picker2 = clone.querySelector('.sub-color');
+    if (instance.subColor) {
+      picker2.value = instance.subColor;
+    } else {
+      picker2.disabled = true;
+      picker2.parentNode.style.opacity = 0.3;
+    }
+
+    clone.querySelector('.save-button').addEventListener('click', event => {    
+      instance.colorChange(picker1.value, picker2.value);
+    });
+
+    clone.querySelector('.delete-button').addEventListener('click', event => {    
+      scene.remove(instance);
+      instance.children.forEach(mesh => {
+        mesh.material.dispose();
+        mesh.geometry.dispose();
+      });
+      const index = objects.indexOf(instance);
+      objects.splice(index, 1);
+      console.log(document.querySelector('#item' + instance.index))
+      document.querySelector('#item' + instance.index).remove();
+    });
+    
+    if (instance instanceof Furniture.Furniture) {
+      document.querySelector('.submenu.furniture').appendChild(clone);
+    } else if (instance instanceof Furniture.StackableItem) {
+      document.querySelector('.submenu.mounted').appendChild(clone);
+    }
 }
 
 class Accordion {
@@ -214,13 +228,28 @@ class Accordion {
     } 
   
     click(e) {
-      console.log(e.target.dataset.type)
       generate(e.target.dataset.type);
     }
   }
+
+  class EditAccordion extends Accordion {
+    constructor(el, multiple) {
+      super(el, multiple);
+    }
+
+    // 
+    click(e) {
+      e.target.querySelector('button', e => {
+        e.addEventListener('click', saveFurniture, false);
+      });
+    }
+  }
   
+  function saveFurniture() {
+    
+  }
   
   document.addEventListener('DOMContentLoaded', () => {
-    var accordion = new Accordion(document.getElementById('accordion'), false);
-
+    new Accordion(document.querySelector('.accordion-menu'), false);
+    new EditAccordion(document.querySelector('.accordion-editor'), false);
   });

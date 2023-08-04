@@ -9,54 +9,165 @@
     <script type="module" src="/client/public/js/main.js"></script>
 </head>
 <body>
-    <div class="panel">
-        <ul id="accordion" class="accordion">
-            <li class="">
-              <div class="link"><i class="fa-solid fa-chair"></i>家具<i class="fa fa-chevron-down"></i></div>
-              <ul class="submenu">
-                <li><a href="#" data-type="Desk">机</a></li>
-                <li><a href="#" data-type="Chair">椅子</a></li>
-                <li><a href="#" data-type="Bed">ベッド</a></li>
-                <li><a href="#" data-type="HighBed">ベッド（高）</a></li>
-              </ul>
-            </li>
-            <li>
-              <div class="link"><i class="fa-solid fa-desktop"></i>卓上家具<i class="fa fa-chevron-down"></i></div>
-              <ul class="submenu">
-                <li><a href="#" data-type="PC">PC</a></li>
-              </ul>
-            </li>
-            <li>
-              <div class="link"><i class="fa-regular fa-calendar"></i>壁掛家具<i class="fa fa-chevron-down"></i></div>
-              <ul class="submenu">
-                <li><a href="#">窓</a></li>
-                <li><a href="#">時計</a></li>
-                <li><a href="#">カレンダー</a></li>
-                <li><a href="#">ポスター</a></li>
-              </ul>
-            </li>
-            <li><div class="link"><i class="fa-solid fa-house"></i>内装<i class="fa fa-chevron-down"></i></div>
-              <ul class="submenu">
-                <li><a href="#">床</a></li>
-                <li><a href="#">壁</a></li>
-                <li><a href="#">天井</a></li>
-                <li><a href="#">電球</a></li>
-                <li><a href="#">扉</a></li>
-              </ul>
-            </li>
-        </ul>
+    <div class="panel menu">
+      <h2 class="titel">家具設置</h2>
+      <ul class="accordion accordion-menu">
+          <li>
+            <div class="link"><i class="fa-solid fa-chair"></i>家具<i class="fa fa-chevron-down"></i></div>
+            <ul class="submenu">
+              <li><a href="#" data-type="Desk">机</a></li>
+              <li><a href="#" data-type="Chair">椅子</a></li>
+              <li><a href="#" data-type="Bed">ベッド</a></li>
+              <li><a href="#" data-type="HighBed">ベッド（高）</a></li>
+            </ul>
+          </li>
+          <li>
+            <div class="link"><i class="fa-solid fa-desktop"></i>卓上家具<i class="fa fa-chevron-down"></i></div>
+            <ul class="submenu">
+              <li><a href="#" data-type="PC">PC</a></li>
+            </ul>
+          </li>
+          <li>
+            <div class="link"><i class="fa-regular fa-calendar"></i>壁掛家具<i class="fa fa-chevron-down"></i></div>
+            <ul class="submenu">
+              <li><a href="#">窓</a></li>
+              <li><a href="#">時計</a></li>
+              <li><a href="#">カレンダー</a></li>
+              <li><a href="#">ポスター</a></li>
+            </ul>
+          </li>
+          <li><div class="link"><i class="fa-solid fa-house"></i>内装<i class="fa fa-chevron-down"></i></div>
+            <ul class="submenu">
+              <li><a href="#">床</a></li>
+              <li><a href="#">壁</a></li>
+              <li><a href="#">天井</a></li>
+              <li><a href="#">電球</a></li>
+              <li><a href="#">扉</a></li>
+            </ul>
+          </li>
+      </ul>
     </div>
     <div class="panel editor">
-        <h2>パーツ名</h2>
-        <div>
-          <label for="mainColor">カラー1</label>
-          <input type="color" name="" id="mainColor">
-        </div>
-        <div>
-          <label for="subColor">カラー2</label>
-          <input type="color" name="" id="subColor">
-        </div>
-        <button id="save-button"><i class="fa-solid fa-floppy-disk"></i>保存</button>
+      <div>
+        <h2 class="titel">家具編集</h2>
+        <ul>
+          <li>
+            <div class="edit-console">
+              <h3>Class Name</h3>
+              <div class="container">
+                <div class="item">
+                  <p for="mainColor">色１</p>
+                  <input type="color" name="" class="main-color">
+                </div>
+                <div class="item">
+                  <p>色２</p>
+                  <input type="color" name="" class="sub-color">
+                </div>
+                <div class="item">
+                  <p>保存</p>
+                  <button class="save-button item" title="save"><i class="fa-solid fa-floppy-disk"></i></button>
+                </div>
+                <div class="item right">
+                  <p>削除</p>
+                  <button class="delete-button item" title="delete"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+        <!-- <div class="container">
+          <div class="item">
+            <label for="mainColor">色１</label><br>
+            <input type="color" name="" id="mainColor">
+          </div>
+          <div class="item">
+            <label for="subColor">色２</label><br>
+            <input type="color" name="" id="subColor">
+          </div>
+          <div class="item">
+            <p>保存</p>
+            <button id="save-button" class="item" title="save"><i class="fa-solid fa-floppy-disk"></i></button>
+          </div>
+          <div class="item right">
+            <p>削除</p>
+            <button id="delete-button" class="item" title="delete"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div> -->
+      </div>
+      <ul class="accordion accordion-editor">
+          <li>
+            <div class="link"><i class="fa-solid fa-chair"></i>家具<i class="fa fa-chevron-down"></i></div>
+            <ul class="submenu furniture">
+            </ul>
+          </li>
+          <li>
+            <div class="link"><i class="fa-solid fa-desktop"></i>卓上家具<i class="fa fa-chevron-down"></i></div>
+            <ul class="submenu mounted">
+            </ul>
+          </li>
+          <li>
+            <div class="link"><i class="fa-regular fa-calendar"></i>壁掛家具<i class="fa fa-chevron-down"></i></div>
+            <ul class="submenu wall-mounted">
+            </ul>
+          </li>
+          <li><div class="link"><i class="fa-solid fa-house"></i>内装<i class="fa fa-chevron-down"></i></div>
+            <ul class="submenu interior">
+              <li>
+                <div class="edit-console">
+                  <h3>床</h3>
+                  <div class="container">
+                    <div class="item">
+                      <p for="mainColor">色１</p>
+                      <input title="color1" type="color" name="" class="mainColor">
+                    </div>
+                    <div class="item">
+                      <p>色２</p>
+                      <input title="color2" type="color" name="" class="subColor">
+                    </div>
+                    <div class="item">
+                      <p>保存</p>
+                      <button class="save-button item" title="save"><i class="fa-solid fa-floppy-disk"></i></button>
+                    </div>
+                    <div class="item right">
+                      <p>削除</p>
+                      <button class="delete-button item" title="delete"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <li><a href="#">壁</a></li>
+              <li><a href="#">天井</a></li>
+              <li><a href="#">電球</a></li>
+              <li><a href="#">扉</a></li>
+            </ul>
+          </li>
+      </ul>
     </div>
+
+    <template id="edit-console">
+      <li>
+        <div class="edit-console">
+          <h3>Class Name</h3>
+          <div class="container">
+            <div class="item">
+              <p for="mainColor">色１</p>
+              <input type="color" name="" class="main-color">
+            </div>
+            <div class="item">
+              <p>色２</p>
+              <input type="color" name="" class="sub-color">
+            </div>
+            <div class="item">
+              <p>保存</p>
+              <button class="save-button item" title="save"><i class="fa-solid fa-floppy-disk"></i></button>
+            </div>
+            <div class="item right">
+              <p>削除</p>
+              <button class="delete-button item" title="delete"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+        </div>
+      </li>
+    </template>
 </body>
 </html>

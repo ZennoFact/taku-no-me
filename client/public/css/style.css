@@ -20,6 +20,8 @@ a {
     text-decoration: none;
 }
 
+
+
 /** =======================
 * Contenedor Principal
 ===========================*/
@@ -36,10 +38,28 @@ h1 a {
     font-size: 16px;
 }
 
+
 .panel {
     width: 20%;
     z-index: 999;
     position: absolute;
+
+    display: block;
+    padding: 15px 0px 15px 0px;
+    color: #4D4D4D;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.menu {
+    top: 30px;
+    left: 0;
+    max-width: 360px;
+    /* margin: 30px auto 20px; */
+    background: #FFF;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
 }
   
 .accordion {
@@ -52,6 +72,7 @@ h1 a {
     border-radius: 4px;
 }
 
+/* TODO: アニメーションの見直し */
 .accordion .link {
     cursor: pointer;
     display: block;
@@ -134,7 +155,7 @@ h1 a {
 
 
 .editor {
-    top: 20px;
+    top: 30px;
     right: 0;
     width: 100%;
     max-width: 360px;
@@ -143,11 +164,47 @@ h1 a {
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
     border-radius: 4px;
+}
 
-    
-    display: block;
-    padding: 15px 15px 15px 42px;
+input[type="color" i] {
+    width: 48px;
+    height: 48px;
+    vertical-align: -3px;
+    border: none;
+    background: none;
+}
+
+.edit-console {
+    color: #d9d9d9;
+}
+
+.edit-console h3 {
+    padding: 5px 10px 0 10px;
+}
+
+.container {
+    margin: 5px 10px;
+    display: flex;
+}
+
+.container .item {
+    margin: 0 5px;
+    text-align: center;
+}
+.container .item.right {
+    margin-left: auto;
+}
+
+div.item button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    aspect-ratio: 1;
     color: #4D4D4D;
-    font-size: 14px;
-    font-weight: 700;
+    background-color: #efefef;
+    border-radius: 50%;
+    box-shadow: -4px -4px 8px #fff, 4px 4px 8px rgb(77 77 77 / 24%); 
+    font-size: 1.4rem;   
 }

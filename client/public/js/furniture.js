@@ -4,10 +4,12 @@ import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 import * as Util from './util';
 import { Room } from './room';
 
+let index = 0;
 
 class RoomItem extends THREE.Group {
-    constructor(scene, room, color = "#ffffff", subColor = "#ffffff", canStack = false) {
+    constructor(scene, room, color = "#ffffff", subColor = null, canStack = false) {
         super();
+        this.index = ++index;
         this.scene = scene;
         this.room = room;
         this.color = color;
@@ -34,12 +36,12 @@ class RoomItem extends THREE.Group {
 
     colorChange(mainColor, subColor) {
         this.mainColor = mainColor;
-        if(this.subMaterial) this.subColor = subColor;
-
-        // TODO：これだとうまく色変わらない。
-        this.mainMaterial.color = this.mainColor;
-        this.geometry.colorsNeedUpdate = true;
-
+        this.mainMaterial.color.set(this.mainColor);
+        
+        if(this.subMaterial) {
+            this.subColor = subColor;
+            this.subMaterial.color.set(this.subColor);
+        }
     }
 
     toJSON() { // TODO: このデータを保存に使う
@@ -181,8 +183,8 @@ class RoomItem extends THREE.Group {
 
 }
 
-class Furniture extends RoomItem {
-    constructor(scene, room, color, subColor = "#ffffff", canStack = false) {
+export class Furniture extends RoomItem {
+    constructor(scene, room, color, subColor = null, canStack = false) {
         super(scene, room, color, subColor,  canStack)
     }   
 
@@ -192,7 +194,7 @@ class Furniture extends RoomItem {
 }
 
 export class StackableItem extends RoomItem {
-    constructor(scene, room, color, subColor = "#ffffff", canStack = true) {
+    constructor(scene, room, color, subColor = null, canStack = true) {
         super(scene, room, color, subColor, canStack);
         this.base = null;
         this.isReplace = false;
@@ -313,7 +315,7 @@ export class StackableItem extends RoomItem {
 }
 
 export class Desk extends Furniture {
-    constructor(scene, room, color = "#242424", subColor = "#ffffff") {
+    constructor(scene, room, color = "#242424", subColor = null) {
         super(scene, room, color, subColor, false);
     }
 
@@ -337,7 +339,7 @@ export class Desk extends Furniture {
 }
 
 export class Chair extends Furniture {
-    constructor(scene, room, color = "#242424", subColor = "#ffffff") {
+    constructor(scene, room, color = "#242424", subColor = null) {
         super(scene, room, color, subColor, false);
     }
 
