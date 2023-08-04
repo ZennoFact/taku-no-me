@@ -126,11 +126,11 @@ function init() {
     
     
     function setLight(scene, roomTop) {
-        const ambientLight = new THREE.AmbientLight(0xFFeeee, 0.2);
+        const ambientLight = new THREE.AmbientLight(0xFFeeee, 1);
         scene.add(ambientLight);
 
         // TODO: ライト(位置固定)のデザイン作らなきゃ
-        const pointLight = new THREE.PointLight(0xffffff, 10)
+        const pointLight = new THREE.PointLight(0xffffff, 10 )
         pointLight.position.set(0, roomTop - 0.5, 0)
         pointLight.castShadow = true;
         scene.add(pointLight);

@@ -112,7 +112,7 @@ h1 a {
     color: #b63b4d;
 }
   
-.accordion li.open i {
+.accordion li.open i.subtitle {
     color: #b63b4d;
 }
 .accordion li.open i.fa-chevron-down {
@@ -183,19 +183,23 @@ input[type="color" i] {
 }
 
 .container {
+    position: relative;
     margin: 5px 10px;
     display: flex;
 }
 
-.container .item {
-    margin: 0 5px;
+.container div.item {
+    position: relative;
+    margin: 5px;
     text-align: center;
 }
-.container .item.right {
+.container div.item.right {
+    position: relative;
     margin-left: auto;
 }
 
-div.item button {
+.container .item button {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -205,6 +209,9 @@ div.item button {
     color: #4D4D4D;
     background-color: #efefef;
     border-radius: 50%;
-    box-shadow: -4px -4px 8px #fff, 4px 4px 8px rgb(77 77 77 / 24%); 
+    box-shadow: -2px -2px 4px #4d4d4d, 2px 2px 4px #efefef; 
     font-size: 1.4rem;   
+}
+div.item button i {
+    font-size: 1.4rem;
 }
